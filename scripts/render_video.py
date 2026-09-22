@@ -104,7 +104,6 @@ def frame(t):
         centered(d,' + '.join(clues),1490,43)
         centered(d,cfg['explanation'],1560,34)
     centered(d,cfg['closing'] if t>=GUESS else '趣味谐音谜题 · 仅供娱乐',1710,33)
-    centered(d,'AI 生成画面',1780,25,'#806b53')
     d.rectangle((0,H-8,int(W*t/DURATION),H),fill=accent)
     return im
 
