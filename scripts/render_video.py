@@ -3,6 +3,7 @@ import argparse, json, math, os, re, shutil, subprocess, sys, wave
 from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from bgm import soundtrack
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--image',type=Path,required=True)
@@ -107,23 +108,7 @@ def frame(t):
     d.rectangle((0,H-8,int(W*t/DURATION),H),fill=accent)
     return im
 
-# Original synthesized soundtrack: soft plucked pentatonic notes and clear ticks.
-sr=44100
-audio=np.zeros(sr*DURATION,dtype=np.float64)
-def note(start,freq,dur,volume):
-    a=int(start*sr); n=min(int(dur*sr),len(audio)-a)
-    if n<=0:return
-    tt=np.arange(n)/sr
-    envelope=(1-np.exp(-tt*65))*np.exp(-tt*3.5)*np.minimum(1,(dur-tt)*12)
-    sig=(np.sin(2*np.pi*freq*tt)+.23*np.sin(4*np.pi*freq*tt))*envelope*volume
-    audio[a:a+n]+=sig
-melody=[523.25,659.25,783.99,659.25,587.33,659.25,880,783.99]
-for i in range(max(1,(DURATION-2)*2)):note(i*.5,melody[i%8],.75,.065)
-for i in range(1,GUESS):note(i,1046.5,.12,.10 if i<GUESS-3 else .17)
-for k,f in enumerate([523.25,659.25,783.99,1046.5]):note(GUESS+k*.12,f,1.6,.16)
-audio*=np.minimum(1,np.arange(len(audio))/sr/.25)*np.minimum(1,(len(audio)-np.arange(len(audio)))/sr/1.2)
-with wave.open(str(WORK/'music.wav'),'wb') as wf:
-    wf.setnchannels(1);wf.setsampwidth(2);wf.setframerate(sr);wf.writeframes((np.clip(audio,-.95,.95)*32767).astype('<i2').tobytes())
+audio, bgm_metadata = soundtrack(ff, cfg, DURATION, GUESS, WORK)
 
 temporary=WORK/(stem+'.partial.mp4')
 cmd=[ff,'-y','-f','rawvideo','-vcodec','rawvideo','-s',f'{W}x{H}','-pix_fmt','rgb24','-r',str(FPS),'-i','-','-i',str(WORK/'music.wav'),'-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart','-shortest',str(temporary)]
@@ -146,5 +131,6 @@ if not args.overwrite and any(p.exists() for p in (out,cover,report)):raise File
 shutil.copyfile(temporary,out)
 frame(0).save(cover,quality=95)
 metadata={'idiom':idiom,'episode':episode,'width':W,'height':H,'fps':FPS,'duration_seconds':DURATION,'frame_count':FPS*DURATION,'audio_peak':float(np.max(np.abs(audio))),'full_decode_passed':True,'audio_stream_present':True,'manual_visual_review':'required','file_bytes':out.stat().st_size}
+metadata.update(bgm_metadata)
 report.write_text(json.dumps(metadata,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps({'video':str(out),'cover':str(cover),'report':str(report)},ensure_ascii=True))

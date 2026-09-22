@@ -15,6 +15,13 @@ JSON 用 UTF-8 编码。脚本支持以下字段；字段遗漏时使用默认�
 | guess_seconds | 整数 5–25，默认 11 | 猜题时间 |
 | answer_seconds | 整数 3–10，默认 5 | 揭晓时间 |
 | filename | 无扩展名的安全文件名，默认使用 idiom | 输出文件名前缀 |
+| bgm_id | 默认 `random` | 随机抽取或指定配乐 ID |
+| previous_bgm_id | 可选，上一期配乐 ID | 随机抽取时排除上一首；固定点歌时忽略 |
+| bgm_lufs | 数值 -24 至 -12，默认 -18 | BGM 目标响度，数值越大越响 |
+
+配乐 ID：`bright_pluck`（轻快拨弦）、`playful_marimba`（俏皮木琴）、`gentle_keys`（温柔琴键）、`curious_clock`（好奇节拍）、`warm_bounce`（暖调律动）。
+
+例如 `"bgm_id": "playful_marimba", "bgm_lufs": -18` 可复用指定配乐。检查报告记录实际选中的 `bgm_id`、`bgm_name`、`bgm_target_lufs` 和混音均方根电平 `audio_rms_dbfs`；目标 LUFS 不等于对最终 AAC 实测的 LUFS。
 
 脚本会缩小较长文字以适应宽度，但仍需人工检查；提示和解释尽量简短。脚本固定 1080×1920、24 fps，其他规格需要明确修改渲染器。
 

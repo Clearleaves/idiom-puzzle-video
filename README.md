@@ -8,7 +8,8 @@
 - 前 11 秒猜题，后 5 秒揭晓；猜题与答案时长可配置。
 - 暖米色背景、立体静物谜面，统一栏目风格。
 - 倒计时数字与问号按实际字形边界水平、垂直居中。
-- 自带原创合成音乐和提示音，默认无口播。
+- 内置 5 段不同旋律、速度和音色的原创 BGM：轻快拨弦、俏皮木琴、温柔琴键、好奇节拍、暖调律动。默认随机选曲，无口播。
+- BGM 默认以 -18 LUFS 为目标统一响度，再混合较轻的倒计时提示音。配置 `bgm_lufs` 可在 -24 到 -12 之间调节。
 - 默认不在画面底部叠加“AI 生成画面”字样；发布时仍需按平台规则声明 AI 生成内容。
 - 提供“五谷丰登”“十全十美”“马到成功”三份示例配置。
 
@@ -60,6 +61,12 @@ python <skill-dir>/scripts/render_video.py --image puzzle.png --config episode.j
 ```
 
 更多配置参见 [配置说明](references/config.md)，图像构图参见 [提示词模板](references/image-prompt.md)。已有成片默认不会被覆盖，需更换配置的 `filename` 或明确传入 `--overwrite`。
+
+### 随机配乐与指定曲目
+
+技能先运行 `python <skill-dir>/scripts/bgm.py --pick`，将随机返回的曲目 ID 写入当期 `bgm_id`。也可省略 `bgm_id`，由渲染器自动随机选取。知道上一期曲目时，用 `--previous <id>` 或配置 `previous_bgm_id` 排除上一首；没有历史信息时允许随机重复。
+
+指定 `bgm_id` 可固定使用 `bright_pluck`、`playful_marimba`、`gentle_keys`、`curious_clock` 或 `warm_bounce`。生成报告记录实际曲目和响度设置。五段 WAV 随技能提供，正常渲染无需联网取歌；`scripts/bgm.py --build` 可按内置乐谱重建音频素材。
 
 ## 文件结构
 
