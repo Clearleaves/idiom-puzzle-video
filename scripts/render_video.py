@@ -64,13 +64,13 @@ def centered(d,text,y,size,color=ink,bold=False):
     while size>18 and d.textlength(text,font=font(size,bold))>W-160: size-=1
     d.text((W//2,y),text,font=font(size,bold),fill=color,anchor='mt')
 
-def text_in_box(d,text,box,size,color=ink,bold=False):
-    """Center the visible glyph bounds, not the font ascent or top anchor."""
+def text_in_box(d,text,box,size,color=ink,bold=False,optical_y=0):
+    """Center visible glyph bounds, then apply a tiny downward optical correction."""
     face=font(size,bold)
     left,top,right,bottom=d.textbbox((0,0),text,font=face)
     x0,y0,x1,y1=box
     x=(x0+x1-(right-left))/2-left
-    y=(y0+y1-(bottom-top))/2-top
+    y=(y0+y1-(bottom-top))/2-top+optical_y
     d.text((x,y),text,font=face,fill=color)
 def frame(t):
     # A gentle camera move preserves the complete puzzle throughout.
@@ -86,7 +86,7 @@ def frame(t):
         remaining=max(1,math.ceil(GUESS-t))
         d.ellipse((466,459,614,607),fill='#fff6e5',outline='#d3b67e',width=3)
         d.arc((466,459,614,607),-90,-90+360*(GUESS-t)/GUESS,fill=accent,width=9)
-        text_in_box(d,str(remaining),(466,459,614,607),74,accent,True)
+        text_in_box(d,str(remaining),(466,459,614,607),74,accent,True,optical_y=6)
         # Sequential underlines point to the four objects without hiding them.
         if 1.0<t<min(5.0,GUESS):
             idx=min(3,int(t-1.0)); cx=[160,400,655,930][idx]
@@ -94,7 +94,7 @@ def frame(t):
         for i in range(4):
             x=279+i*140
             d.rounded_rectangle((x,1360,x+112,1472),radius=22,fill='#fff7e9',outline='#d8bd91',width=2)
-            text_in_box(d,'?',(x,1360,x+112,1472),62,'#b48a50',True)
+            text_in_box(d,'?',(x,1360,x+112,1472),62,'#b48a50',True,optical_y=8)
         centered(d,cfg['hint'] if t>=GUESS*.55 else '先别急，按从左到右猜一猜',1535,40,accent)
     else:
         centered(d,'答案揭晓',475,44,accent,True)

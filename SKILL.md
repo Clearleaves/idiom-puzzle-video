@@ -41,7 +41,7 @@ description: 制作看图猜成语、谐音猜谜的竖屏短视频：审题、�
 
 复用 [scripts/render_video.py](scripts/render_video.py)，无需重新编写渲染器。脚本接受独立图片和 JSON 配置，不依赖创建本技能的会话或历史文件。
 
-倒计时数字和答案占位问号使用 `text_in_box`：根据 `textbbox` 的实际字形边界，在圆形或方框内水平、垂直居中。不要用固定顶部坐标、字号的一半或字体行高中线代替字形居中；更换字体、字号或容器大小后仍按实际边界计算。
+倒计时数字和答案占位问号使用 `text_in_box`：根据 `textbbox` 的实际字形边界，在圆形或方框内水平、垂直居中，再给数字下移 6 px、问号下移 8 px 的小幅光学校正。不要用固定顶部坐标、字号的一半或字体行高中线代替字形居中；更换字体、字号或容器大小后仍按实际边界计算，光学校正也要随字号按比例调整。
 
 依赖为 Python、Pillow、NumPy、FFmpeg（系统安装或 `imageio-ffmpeg` 提供），以及可显示中文的字体。依赖清单为 [scripts/requirements.txt](scripts/requirements.txt)。如果需要安装，优先放到任务工作区虚拟环境或 `work/deps`，不要修改技能目录或全局 Python。Windows 默认探测微软雅黑；其他系统通过 `--font`、`--font-bold` 指定字体。
 
