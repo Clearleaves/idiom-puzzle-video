@@ -1,9 +1,7 @@
 """Render a four-clue idiom video from an original still and an episode JSON."""
-import argparse, json, math, os, re, shutil, subprocess, sys, wave
+import argparse, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
-import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from bgm import soundtrack
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--image',type=Path,required=True)
@@ -108,10 +106,9 @@ def frame(t):
     d.rectangle((0,H-8,int(W*t/DURATION),H),fill=accent)
     return im
 
-audio, bgm_metadata = soundtrack(ff, cfg, DURATION, GUESS, WORK)
 
 temporary=WORK/(stem+'.partial.mp4')
-cmd=[ff,'-y','-f','rawvideo','-vcodec','rawvideo','-s',f'{W}x{H}','-pix_fmt','rgb24','-r',str(FPS),'-i','-','-i',str(WORK/'music.wav'),'-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart','-shortest',str(temporary)]
+cmd=[ff,'-y','-f','rawvideo','-vcodec','rawvideo','-s',f'{W}x{H}','-pix_fmt','rgb24','-r',str(FPS),'-i','-','-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p','-an','-movflags','+faststart',str(temporary)]
 with open(WORK/'render.log','w',encoding='utf-8') as log:
     process=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=log,stderr=log)
     try:
@@ -125,12 +122,11 @@ with open(WORK/'render.log','w',encoding='utf-8') as log:
     except BaseException:
         process.kill();process.wait()
         raise
-check=subprocess.run([ff,'-v','error','-i',str(temporary),'-map','0:v:0','-map','0:a:0','-f','null','-'],capture_output=True,timeout=120)
+check=subprocess.run([ff,'-v','error','-i',str(temporary),'-map','0:v:0','-f','null','-'],capture_output=True,timeout=120)
 if check.returncode:raise RuntimeError('Video decode check failed: '+check.stderr.decode('utf-8',errors='replace'))
 if not args.overwrite and any(p.exists() for p in (out,cover,report)):raise FileExistsError('Output appeared during rendering; choose a new filename')
 shutil.copyfile(temporary,out)
 frame(0).save(cover,quality=95)
-metadata={'idiom':idiom,'episode':episode,'width':W,'height':H,'fps':FPS,'duration_seconds':DURATION,'frame_count':FPS*DURATION,'audio_peak':float(np.max(np.abs(audio))),'full_decode_passed':True,'audio_stream_present':True,'manual_visual_review':'required','file_bytes':out.stat().st_size}
-metadata.update(bgm_metadata)
+metadata={'idiom':idiom,'episode':episode,'width':W,'height':H,'fps':FPS,'duration_seconds':DURATION,'frame_count':FPS*DURATION,'full_decode_passed':True,'audio_stream_present':False,'manual_visual_review':'required','file_bytes':out.stat().st_size}
 report.write_text(json.dumps(metadata,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps({'video':str(out),'cover':str(cover),'report':str(report)},ensure_ascii=True))

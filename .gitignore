@@ -8,7 +8,7 @@ work/
 outputs/
 *.mp4
 *.wav
-!assets/bgm/*.wav
+
 *.log
 .DS_Store
 Thumbs.db
